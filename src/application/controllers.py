@@ -5,12 +5,16 @@ Controladores de aplicación para OCR-CLI.
 import time
 from pathlib import Path
 from typing import Tuple, List, Dict, Any
+import logging
 
-from adapters.ocr_adapters import TesseractAdapter, TesseractOpenCVAdapter
-from adapters.table_pdfplumber import PdfPlumberAdapter
-from adapters.storage_filesystem import FileStorage
+from application.ports import OCRPort, TableExtractorPort, StoragePort
 from application.use_cases import ProcessDocument
 from config.system_config import SystemConfig
+from shared.exceptions import DocumentNotFoundError, ProcessingError, ConfigurationError
+from shared.constants import ENGINE_TYPE_BASIC, ENGINE_TYPE_OPENCV
+from shared.factories import AdapterFactory
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentController:
@@ -37,24 +41,32 @@ class DocumentController:
         """
         Procesa un PDF usando la configuración OCR especificada.
         
+        Args:
+            filename: Nombre del archivo PDF
+            ocr_config: Configuración OCR a usar
+            
         Returns:
-            (éxito, información_procesamiento)
+            Tuple[bool, Dict[str, Any]]: (éxito, información_procesamiento)
         """
         pdf_path = self.pdf_dir / filename
         
         # Validar que el archivo existe
         if not pdf_path.exists():
-            return False, {
+            error_info = {
                 "error": f"Archivo {filename} no encontrado",
                 "filename": filename,
                 "processing_time": 0
             }
+            logger.error(f"Archivo no encontrado: {pdf_path}")
+            return False, error_info
         
         try:
-            # Configurar adaptadores basado en la configuración
-            ocr_adapter = self._create_ocr_adapter(ocr_config)
-            table_adapter = PdfPlumberAdapter()
-            storage_adapter = FileStorage(self.output_dir)
+            logger.info(f"Iniciando procesamiento de {filename}")
+            
+            # Crear adaptadores usando factory
+            ocr_adapter = AdapterFactory.create_ocr_adapter(ocr_config)
+            table_adapter = AdapterFactory.create_table_extractor()
+            storage_adapter = AdapterFactory.create_storage_adapter(self.output_dir)
             
             # Crear caso de uso
             processor = ProcessDocument(
@@ -74,14 +86,14 @@ class DocumentController:
                 if isinstance(result, tuple) and len(result) == 2:
                     texto_principal, archivos_generados = result
                 else:
-                    raise ValueError(f"ProcessDocument retornó {type(result)} en lugar de tupla de 2 elementos: {result}")
+                    raise ProcessingError(f"ProcessDocument retornó {type(result)} en lugar de tupla de 2 elementos: {result}")
                     
             except Exception as debug_error:
-                raise Exception(f"Error en processor(): {debug_error}")
+                raise ProcessingError(f"Error en processor(): {debug_error}")
             
             processing_time = time.time() - start_time
             
-            return True, {
+            success_info = {
                 "filename": filename,
                 "processing_time": processing_time,
                 "main_text_file": texto_principal,
@@ -91,32 +103,32 @@ class DocumentController:
                 "error": None
             }
             
-        except Exception as e:
+            logger.info(f"Procesamiento exitoso de {filename} en {processing_time:.2f}s")
+            return True, success_info
+            
+        except (ConfigurationError, ProcessingError) as e:
             processing_time = time.time() - start_time if 'start_time' in locals() else 0
-            return False, {
+            error_info = {
                 "filename": filename,
                 "processing_time": processing_time,
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "ocr_config": ocr_config
             }
-    
-    def _create_ocr_adapter(self, config: SystemConfig):
-        """
-        Crea el adaptador OCR apropiado basado en la configuración.
-        
-        Args:
-            config (SystemConfig): Configuración del motor OCR
+            logger.error(f"Error controlado procesando {filename}: {e}")
+            return False, error_info
             
-        Returns:
-            OCRPort: Adaptador OCR configurado
-        """
-        if config.engine_type == "basic":
-            return TesseractAdapter.from_config(config)
-        elif config.engine_type == "opencv":
-            return TesseractOpenCVAdapter.from_config(config)
-        else:
-            raise ValueError(f"Tipo de motor OCR no soportado: {config.engine_type}")
+        except Exception as e:
+            processing_time = time.time() - start_time if 'start_time' in locals() else 0
+            error_info = {
+                "filename": filename,
+                "processing_time": processing_time,
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "ocr_config": ocr_config
+            }
+            logger.exception(f"Error inesperado procesando {filename}")
+            return False, error_info
     
     def get_processing_capabilities(self) -> Dict[str, Any]:
         """
@@ -127,13 +139,13 @@ class DocumentController:
         """
         return {
             "ocr_engines": {
-                "basic": {
+                ENGINE_TYPE_BASIC: {
                     "name": "Tesseract básico",
                     "description": "OCR rápido para documentos de alta calidad",
                     "performance": "Alto",
                     "quality": "Bueno"
                 },
-                "opencv": {
+                ENGINE_TYPE_OPENCV: {
                     "name": "Tesseract + OpenCV",
                     "description": "OCR avanzado con preprocesamiento",
                     "performance": "Medio",
