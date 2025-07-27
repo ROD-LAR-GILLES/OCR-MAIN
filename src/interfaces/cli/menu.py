@@ -31,7 +31,9 @@ def display_welcome_message() -> None:
 
 
 def display_pdf_menu(pdf_files: List[str]) -> None:
-    """Muestra menú de selección de archivos PDF."""
+    """
+    Muestra menú de selección de archivos PDF.
+    """
     print("Selecciona un PDF para procesar:")
     
     menu_options = create_pdf_menu_options(pdf_files)
@@ -42,7 +44,9 @@ def display_pdf_menu(pdf_files: List[str]) -> None:
 
 
 def get_user_pdf_selection(total_options: int) -> int:
-    """Captura y valida selección de PDF del usuario."""
+    """
+    Captura y valida selección de PDF del usuario.
+    """
     from utils.menu_logic import validate_menu_selection
     
     while True:
@@ -62,8 +66,6 @@ def get_user_pdf_selection(total_options: int) -> int:
 def display_ocr_engine_menu() -> None:
     """
     Muestra el menú de selección de motor OCR.
-    
-    Función pura de presentación.
     """
     print("\nSelecciona el motor de OCR:")
     print("1. Tesseract básico (rápido)")
@@ -72,11 +74,10 @@ def display_ocr_engine_menu() -> None:
 
 
 def get_user_ocr_selection() -> int:
+   
     """
-    Captura y valida selección de motor OCR del usuario.
-    
-    Returns:
-        int: Opción de motor OCR seleccionada (1, 2, o 3)
+    Solicita al usuario una opción de motor OCR (1-3) y la valida.
+        int: Opción seleccionada (1, 2 o 3).
     """
     while True:
         try:
@@ -92,9 +93,6 @@ def get_user_ocr_selection() -> int:
 def get_advanced_preprocessing_config() -> tuple[bool, bool, bool]:
     """
     Captura configuración avanzada de preprocesamiento del usuario.
-    
-    Returns:
-        tuple: (enable_deskewing, enable_denoising, enable_contrast)
     """
     print("\nConfigurando preprocesamiento OpenCV.")
     
@@ -115,22 +113,18 @@ def get_advanced_preprocessing_config() -> tuple[bool, bool, bool]:
 
 def ask_for_advanced_config() -> bool:
     """
-    Pregunta al usuario si desea configuración avanzada.
-    
-    Returns:
-        bool: True si quiere configuración avanzada, False para valores por defecto
+    Pregunta si se desea configuración avanzada.
     """
+    
     response = input("¿Configurar opciones avanzadas de preprocesamiento? (s/n): ")
     return response.lower().startswith('s')
 
 
 def display_ocr_config_info(config: SystemConfig) -> None:
     """
-    Muestra información sobre la configuración OCR seleccionada.
-    
-    Args:
-        config (SystemConfig): Configuración del motor OCR
+    Muestra información de la configuración OCR seleccionada.
     """
+
     if config.engine_type == "basic":
         print("Usando Tesseract básico.")
     else:
@@ -143,9 +137,6 @@ def display_ocr_config_info(config: SystemConfig) -> None:
 def display_processing_start(filename: str) -> None:
     """
     Muestra mensaje de inicio de procesamiento.
-    
-    Args:
-        filename (str): Nombre del archivo a procesar
     """
     print(f"\nIniciando procesamiento de {filename}.")
 
@@ -153,9 +144,6 @@ def display_processing_start(filename: str) -> None:
 def display_processing_success(processing_info: dict) -> None:
     """
     Muestra información de procesamiento exitoso.
-    
-    Args:
-        processing_info (dict): Información del procesamiento exitoso
     """
     print(f"\n{processing_info['filename']} procesado exitosamente!")
     print(f"Tiempo de procesamiento: {processing_info['processing_time']:.2f} segundos")
@@ -198,10 +186,8 @@ def display_exit_message() -> None:
 def display_pdf_type_menu() -> None:
     """
     Muestra el menú de selección de tipo de PDF.
-    
-    Función pura de presentación para optimizar el procesamiento
-    según el tipo de documento.
     """
+
     print("\nTipo de documento PDF a procesar:")
     print("1. Documento escaneado (imagen digitalizada)")
     print("2. PDF nativo con texto (generado digitalmente)")
@@ -212,10 +198,7 @@ def display_pdf_type_menu() -> None:
 
 def get_user_pdf_type_selection() -> int:
     """
-    Captura y valida selección de tipo de PDF del usuario.
-    
-    Returns:
-        int: Opción de tipo de PDF seleccionada (1-5)
+    Solicita y valida la selección del tipo de PDF (1-5).
     """
     while True:
         try:
@@ -230,11 +213,9 @@ def get_user_pdf_type_selection() -> int:
 
 def display_pdf_type_info(pdf_type: int) -> None:
     """
-    Muestra información sobre el tipo de PDF seleccionado y sus optimizaciones.
-    
-    Args:
-        pdf_type (int): Tipo de PDF seleccionado
+    Muestra información sobre el tipo de PDF seleccionado.
     """
+
     type_info = {
         1: {
             "name": "Documento escaneado",
@@ -274,14 +255,9 @@ def display_pdf_type_info(pdf_type: int) -> None:
 
 def get_optimized_ocr_config_for_pdf_type(pdf_type: int) -> SystemConfig:
     """
-    Retorna configuración OCR optimizada según el tipo de PDF.
-    
-    Args:
-        pdf_type (int): Tipo de PDF seleccionado
-        
-    Returns:
-        SystemConfig: Configuración optimizada para el tipo de documento
+    Devuelve la configuración OCR recomendada para el tipo de PDF.
     """
+
     if pdf_type == 1:  # Documento escaneado
         return create_ocr_config_from_user_choices(
             engine_choice=2,  # OpenCV
@@ -317,19 +293,7 @@ def get_optimized_ocr_config_for_pdf_type(pdf_type: int) -> SystemConfig:
 
 def process_document_workflow(filename: str) -> None:
     """
-    Ejecuta el flujo completo de procesamiento de un documento.
-    
-    Esta función coordina la interfaz de usuario para seleccionar tipo de PDF,
-    opciones de OCR y delega el procesamiento real al controlador.
-    
-    Args:
-        filename (str): Nombre del archivo PDF a procesar
-        
-    Note:
-        Separación de responsabilidades:
-        - Esta función: I/O y presentación
-        - DocumentController: Lógica de procesamiento
-        - Utilidades: Validación y configuración
+    Procesa un documento PDF dado su nombre de archivo.
     """
     # PASO 1: SELECCIÓN DEL TIPO DE PDF
     display_pdf_type_menu()
@@ -399,18 +363,8 @@ def process_document_workflow(filename: str) -> None:
 
 def main() -> None:
     """
-    Función principal que ejecuta el bucle interactivo de la aplicación.
-    
-    Implementa ÚNICAMENTE la lógica de presentación e interacción:
-    - Muestra menús
-    - Captura entrada del usuario  
-    - Delega lógica de negocio a utilidades y controladores
-    
-    Separación de responsabilidades:
-    - Esta función: I/O puro
-    - utils.file_utils: Descubrimiento de archivos
-    - utils.menu_logic: Validación de selecciones
-    - DocumentController: Procesamiento de documentos
+    Función principal del CLI.
+    Muestra menús, recibe entradas y delega el procesamiento.
     """
     while True:
         try:
