@@ -2,7 +2,7 @@
 
 Sistema de OCR (Reconocimiento Óptico de Caracteres) con arquitectura hexagonal, dockerizado y optimizado para procesamiento de documentos PDF.
 
-## 🚀 Características
+## Características
 
 - **Arquitectura Hexagonal**: Separación clara de capas (Domain, Application, Adapters, Interfaces)
 - **Docker**: Contenedorización completa con docker-compose
@@ -10,7 +10,7 @@ Sistema de OCR (Reconocimiento Óptico de Caracteres) con arquitectura hexagonal
 - **Múltiples Adaptadores**: Pymupdf, PDFplumber
 - **Configuración Unificada**: Sistema de configuración centralizado
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 src/
@@ -21,7 +21,7 @@ src/
 └── config/          # Configuración del sistema
 ```
 
-## 🛠️ Instalación y Uso
+## Instalación y Uso
 
 ### Con Docker (Recomendado)
 
@@ -70,7 +70,7 @@ sudo apt-get install tesseract-ocr tesseract-ocr-spa
 python src/interfaces/cli/main.py
 ```
 
-## ⚙️ Configuración
+## Configuración
 
 El sistema utiliza configuración unificada en `src/config/system_config.py`:
 
@@ -78,7 +78,7 @@ El sistema utiliza configuración unificada en `src/config/system_config.py`:
 - **Engines OCR**: pymupdf, tesseract
 - **Rutas configurables**: PDFs, resultados, cache
 
-## 🔧 Mejoras Implementadas
+## Mejoras Implementadas
 
 - ✅ Eliminación de tests obsoletos
 - ✅ Unificación de configuración (SystemConfig)
@@ -87,12 +87,12 @@ El sistema utiliza configuración unificada en `src/config/system_config.py`:
 - ✅ Simplificación de adaptadores de almacenamiento
 - ✅ Optimización de Docker build
 
-## 📊 Estado del Proyecto
+## Estado del Proyecto
 
-- **Build Status**: ✅ Funcionando
-- **Docker**: ✅ Operativo
-- **OCR Processing**: ✅ Listo
-- **Architecture**: ✅ Clean Architecture implementada
+- **Build Status**: Funcionando
+- **Docker**: Operativo
+- **OCR Processing**: Listo
+- **Architecture**: Clean Architecture implementada
 
 ## Descripción General
 
