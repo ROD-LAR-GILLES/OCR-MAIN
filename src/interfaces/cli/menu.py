@@ -1,23 +1,6 @@
 # interfaces/cli/menu.py
 """
-Interfaz de línea de comandos interactiva para OCR-CLI.
-
-Este módulo implementa ÚNICAMENTE la capa de presentación e interacción con el usuario.
-La lógica de negocio está separada en controladores y utilidades para permitir:
-- Testing automatizado sin simulación de I/O
-- Reutilización de lógica en otras interfaces (GUI, API)
-- Mantenibilidad y extensibilidad mejoradas
-
-Responsabilidades de este módulo (SOLO I/O):
-- Captura de entrada del usuario (input())
-- Presentación de información (print())
-- Formateo y visualización de resultados
-- Manejo de errores de interfaz
-
-Lógica de negocio delegada a:
-- utils.file_utils: Operaciones de archivos
-- utils.menu_logic: Lógica de menús y validaciones
-- application.controllers: Coordinación de casos de uso
+Interfaz de línea de comandos para OCR-CLI.
 """
 
 from pathlib import Path
@@ -41,27 +24,14 @@ OUT_DIR = Path("/app/resultado")   # Directorio de salida (host: ./resultado)
 
 
 def display_welcome_message() -> None:
-    """
-    Muestra mensaje de bienvenida y título de la aplicación.
-    
-    Función pura de presentación sin lógica de negocio.
-    """
+    """Muestra mensaje de bienvenida."""
     print("\n" + "="*50)
     print("OCR-CLI - Procesador de documentos PDF")
     print("="*50)
 
 
 def display_pdf_menu(pdf_files: List[str]) -> None:
-    """
-    Muestra el menú de selección de archivos PDF.
-    
-    Args:
-        pdf_files (List[str]): Lista de archivos PDF disponibles
-        
-    Note:
-        Función pura de presentación. La lógica de creación de opciones
-        está en utils.menu_logic.create_pdf_menu_options()
-    """
+    """Muestra menú de selección de archivos PDF."""
     print("Selecciona un PDF para procesar:")
     
     menu_options = create_pdf_menu_options(pdf_files)
@@ -72,19 +42,7 @@ def display_pdf_menu(pdf_files: List[str]) -> None:
 
 
 def get_user_pdf_selection(total_options: int) -> int:
-    """
-    Captura y valida selección de PDF del usuario.
-    
-    Args:
-        total_options (int): Total de opciones disponibles en el menú
-        
-    Returns:
-        int: Opción seleccionada válida
-        
-    Note:
-        Maneja la validación de entrada pero usa utils.menu_logic
-        para la lógica de validación.
-    """
+    """Captura y valida selección de PDF del usuario."""
     from utils.menu_logic import validate_menu_selection
     
     while True:
@@ -519,12 +477,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     """
-    Punto de entrada cuando el módulo se ejecuta directamente.
-    
-    Permite ejecutar la aplicación con:
-    python interfaces/cli/menu.py
-    
-    En el contexto Docker, este es el comando por defecto definido
-    en el Dockerfile, ejecutándose automáticamente al iniciar el contenedor.
+    Punto de entrada directo del módulo.
     """
     main()
