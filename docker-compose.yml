@@ -1,0 +1,36 @@
+services:
+  ocr-processing-api:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ocr-processing-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mapear directorios para persistencia
+      - ./pdfs:/app/pdfs
+      - ./resultado:/app/resultado  
+      - ./logs:/app/logs
+      # CORREGIDO: Ahora el código está en backend/src
+      - ./backend/src:/app/src
+    environment:
+      - PYTHONPATH=/app/src
+      - INPUT_DIRECTORY=/app/pdfs
+      - OUTPUT_DIRECTORY=/app/resultado
+      - LOGS_DIRECTORY=/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ocr-network
+
+networks:
+  ocr-network:
+    driver: bridge
+
+volumes:
+  ocr-data:
+    driver: local
