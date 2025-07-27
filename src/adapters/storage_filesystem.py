@@ -68,8 +68,11 @@ class FileStorage(StoragePort):
         """
         Guarda un documento completo con todas sus métricas y metadatos.
         
-        Args:    document: Instancia de Document con OCRResult y métricas
-        Returns: Tuple[str, List[str]]: Directorio de salida y lista de archivos generados
+        Args:
+            document: Instancia de Document con OCRResult y métricas
+            
+        Returns:
+            Tuple[str, List[str]]: Directorio de salida y lista de archivos generados
         """
         archivos_generados = self.save(
             document.name,
@@ -100,6 +103,7 @@ class FileStorage(StoragePort):
                 
                 archivos_generados.append(str(metrics_path))
             except Exception as e:
+                # Si falla, continuar sin el archivo de métricas
                 pass
         
         return str(self.out_dir / document.name), archivos_generados
@@ -118,6 +122,7 @@ class FileStorage(StoragePort):
         if not tables:
             return text
             
+        # Estrategia simplificada: agregar todas las tablas al final del texto
         result = text + "\n\n## Tablas Extraídas\n\n"
         
         for i, df in enumerate(tables, 1):
