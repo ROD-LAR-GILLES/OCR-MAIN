@@ -9,12 +9,6 @@ from typing import List
 def discover_pdf_files(directory: Path) -> List[str]:
     """
     Lista archivos PDF en un directorio.
-    
-    Args:
-        directory: Ruta del directorio
-        
-    Returns:
-        Lista ordenada de nombres de archivos PDF
     """
     if not directory.exists():
         raise FileNotFoundError(f"El directorio {directory} no existe")
@@ -32,13 +26,6 @@ def discover_pdf_files(directory: Path) -> List[str]:
 def validate_pdf_exists(directory: Path, filename: str) -> bool:
     """
     Verifica si existe un archivo PDF en el directorio.
-    
-    Args:
-        directory: Directorio a revisar
-        filename: Nombre del archivo
-        
-    Returns:
-        True si el archivo existe
     """
     file_path = directory / filename
     return file_path.exists() and file_path.is_file() and filename.endswith('.pdf')
@@ -46,13 +33,7 @@ def validate_pdf_exists(directory: Path, filename: str) -> bool:
 
 def get_file_info(file_path: Path) -> dict:
     """
-    Obtiene información básica de un archivo.
-    
-    Args:
-        file_path: Ruta al archivo
-        
-    Returns:
-        Dict con nombre, tamaño y metadatos
+    Devuelve información básica de un archivo.
     """
     if not file_path.exists():
         raise FileNotFoundError(f"El archivo {file_path} no existe")

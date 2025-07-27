@@ -29,44 +29,24 @@ def create_pdf_menu_options(pdf_files: List[str]) -> List[MenuOption]:
 
 
 def validate_menu_selection(selection: int, total_options: int) -> bool:
-    """
-    Valida que una selección de menú esté dentro del rango válido.
-    
-    Args:
-        selection (int): Número seleccionado por el usuario
-        total_options (int): Total de opciones disponibles
-        
-    Returns:
-        bool: True si la selección es válida, False en caso contrario
-        
-    Example:
-        >>> validate_menu_selection(2, 5)
-        True
-        >>> validate_menu_selection(6, 5)
-        False
-    """
+    """Valida si la selección está dentro del rango de opciones."""
     return 1 <= selection <= total_options
 
 
 def get_selected_pdf(pdf_files: List[str], selection: int) -> str:
     """
-    Obtiene el archivo PDF seleccionado basado en la opción elegida.
-    
+    Devuelve el nombre del PDF seleccionado según la opción elegida.
+
     Args:
-        pdf_files (List[str]): Lista de archivos PDF disponibles
-        selection (int): Número de opción seleccionada (1-indexed)
-        
+        pdf_files (List[str]): Lista de archivos PDF.
+        selection (int): Opción seleccionada (1-indexado).
+
     Returns:
-        str: Nombre del archivo PDF seleccionado
-        
+        str: Nombre del PDF seleccionado.
+
     Raises:
-        ValueError: Si la selección está fuera de rango
-        IndexError: Si hay problemas con los índices
-        
-    Example:
-        >>> files = ["doc1.pdf", "doc2.pdf"]
-        >>> get_selected_pdf(files, 2)
-        "doc2.pdf"
+        ValueError: Si la selección es inválida.
+        IndexError: Si el índice está fuera de rango.
     """
     if not pdf_files:
         raise ValueError("No hay archivos PDF disponibles")
@@ -81,20 +61,7 @@ def get_selected_pdf(pdf_files: List[str], selection: int) -> str:
 
 
 def is_exit_selection(selection: int, total_pdf_files: int) -> bool:
-    """
-    Determina si la selección corresponde a la opción de salida.
-    
-    Args:
-        selection (int): Número seleccionado
-        total_pdf_files (int): Total de archivos PDF disponibles
-        
-    Returns:
-        bool: True si es selección de salida, False en caso contrario
-        
-    Example:
-        >>> is_exit_selection(3, 2)  # 3 es "Salir" cuando hay 2 PDFs
-        True
-    """
+    """Devuelve True si la selección es la opción de salida."""
     return selection == total_pdf_files + 1
 
 
@@ -105,24 +72,7 @@ def create_ocr_config_from_user_choices(
     enable_contrast: bool = True
 ) -> SystemConfig:
     """
-    Crea configuración de OCR basada en las elecciones del usuario.
-    
-    Args:
-        engine_choice (int): 1 para básico, 2 para OpenCV
-        enable_deskewing (bool): Habilitar corrección de inclinación
-        enable_denoising (bool): Habilitar eliminación de ruido
-        enable_contrast (bool): Habilitar mejora de contraste
-        
-    Returns:
-        SystemConfig: Configuración del motor OCR
-        
-    Raises:
-        ValueError: Si engine_choice no es válido
-        
-    Example:
-        >>> config = create_ocr_config_from_user_choices(2, True, False, True)
-        >>> print(config.language)
-        "spa"
+    Crea una configuración OCR según la opción y ajustes elegidos.
     """
     if engine_choice == 1:
         return SystemConfig(
