@@ -1,0 +1,14 @@
+services:
+  ocr-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./pdfs:/app/pdfs         
+      - ./resultado:/app/resultado
+    tty: true
+    stdin_open: true
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app/src
+    command: ["python", "src/interfaces/cli/main.py"]              
