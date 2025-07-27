@@ -1,8 +1,5 @@
 """
-Lógica de menús y selección de opciones.
-
-Este módulo contiene funciones puras para manejar la lógica de menús
-sin depender de entrada/salida específica.
+Lógica de menús y validación de opciones.
 """
 
 from typing import List, Optional, Tuple
@@ -12,28 +9,14 @@ from config.system_config import SystemConfig
 
 @dataclass
 class MenuOption:
-    """Representa una opción de menú con su identificador y descripción."""
+    """Opción de menú con ID, texto y valor."""
     id: int
     text: str
     value: str = ""
 
 
 def create_pdf_menu_options(pdf_files: List[str]) -> List[MenuOption]:
-    """
-    Crea opciones de menú a partir de una lista de archivos PDF.
-    
-    Args:
-        pdf_files (List[str]): Lista de nombres de archivos PDF
-        
-    Returns:
-        List[MenuOption]: Lista de opciones de menú con opción de salida
-        
-    Example:
-        >>> files = ["doc1.pdf", "doc2.pdf"]
-        >>> options = create_pdf_menu_options(files)
-        >>> print(options[0].text)
-        "1. doc1.pdf"
-    """
+    """Crea opciones de menú para archivos PDF."""
     options = []
     for i, filename in enumerate(pdf_files, 1):
         options.append(MenuOption(id=i, text=f"{i}. {filename}", value=filename))
