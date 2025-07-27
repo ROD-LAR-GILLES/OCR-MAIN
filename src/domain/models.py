@@ -1,16 +1,6 @@
 # domain/models.py
 """
-Modelos de dominio que representan las entidades principales del negocio.
-
-Este módulo contiene las entidades puras del dominio, libres de dependencias
-externas y frameworks específicos. Los modelos definen la estructura y
-comportamiento esencial de los conceptos del negocio.
-
-Principios aplicados:
-- Domain-Driven Design: Modelos que reflejan el lenguaje del negocio
-- Single Responsibility: Cada modelo tiene una responsabilidad clara
-- Immutability: Modelos inmutables para garantizar consistencia
-- Type Safety: Uso de type hints para claridad y validación
+Modelos de dominio para el sistema OCR.
 """
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -20,12 +10,7 @@ from datetime import datetime
 
 @dataclass
 class ProcessingMetrics:
-    """
-    Métricas de procesamiento y calidad para operaciones de OCR.
-    
-    Contiene información detallada sobre el rendimiento y calidad
-    del procesamiento de documentos.
-    """
+    """Métricas de procesamiento OCR."""
     page_number: Optional[int] = None
     confidence_score: float = 0.0
     processing_time: float = 0.0
@@ -50,12 +35,7 @@ class ProcessingMetrics:
 
 @dataclass
 class OCRResult:
-    """
-    Resultado completo de una operación de OCR con métricas.
-    
-    Encapsula tanto el texto extraído como todas las métricas
-    de calidad y rendimiento del procesamiento.
-    """
+    """Resultado de OCR con métricas de calidad."""
     text: str
     metrics: ProcessingMetrics
     page_count: int
@@ -75,92 +55,17 @@ class OCRResult:
 
 @dataclass
 class Document:
-    """
-    Entidad que representa un documento procesado en el sistema.
+    """Documento procesado con texto y tablas extraídas."""
     
-    Esta entidad encapsula toda la información extraída de un documento PDF
-    después del procesamiento completo, incluyendo tanto texto como datos
-    estructurados (tablas).
-    
-    Responsabilidades:
-    - Mantener la integridad de los datos extraídos
-    - Proporcionar una representación unificada del documento
-    - Servir como modelo de datos para persistencia y transferencia
-    - Mantener la trazabilidad hacia el archivo original
-    
-    Casos de uso:
-    - Transferencia de datos entre capas de la aplicación
-    - Serialización/deserialización para APIs REST
-    - Persistencia en bases de datos
-    - Análisis y transformación de contenido
-    
-    Future Extensions:
-    - metadata: Dict con información adicional (fecha procesamiento, versión OCR, etc.)
-    - pages: List[Page] para análisis granular por página
-    - confidence_scores: Métricas de confianza del OCR
-    - language: Idioma detectado del documento
-    """
-    
-    name: str
-    """
-    Nombre identificador del documento.
-    
-    Generalmente corresponde al nombre del archivo original sin extensión,
-    pero puede ser modificado por el usuario para mayor claridad semántica.
-    Debe ser único dentro del contexto de procesamiento.
-    """
-    
-    source_path: Path
-    """
-    Ruta al archivo PDF original en el sistema de archivos.
-    
-    Mantiene la trazabilidad hacia el documento fuente, permitiendo
-    reprocesamiento si es necesario y validación de integridad.
-    """
-    
-    extracted_text: str
-    """
-    Texto completo extraído del documento mediante OCR.
-    
-    Contiene todo el contenido textual identificado en el documento,
-    preservando la estructura de párrafos y separación entre páginas.
-    El texto puede contener errores típicos de OCR que requieren validación.
-    """
-    
-    tables: List[Any]
-    """
-    Lista de tablas extraídas como DataFrames de pandas.
-    
-    Cada elemento representa una tabla detectada en el documento,
-    manteniendo la estructura de filas y columnas originales.
-    Las tablas están listas para análisis, exportación o transformación.
-    """
-    
-    # Nuevos campos para métricas avanzadas
-    ocr_result: Optional[OCRResult] = None
-    """Resultado detallado del OCR con métricas de calidad."""
-    
-    processing_metadata: Dict[str, Any] = field(default_factory=dict)
-    """Metadatos adicionales del procesamiento."""
+    name: str  # Nombre identificador del documento
+    source_path: Path  # Ruta al PDF original
+    extracted_text: str  # Texto extraído por OCR
+    tables: List[Any]  # Tablas como DataFrames
+    ocr_result: Optional[OCRResult] = None  # Métricas detalladas
+    processing_metadata: Dict[str, Any] = field(default_factory=dict)  # Metadatos adicionales
     
     def __post_init__(self) -> None:
-        """
-        Validaciones post-inicialización del modelo.
-        
-        Ejecuta validaciones de integridad después de la creación
-        del objeto para garantizar que los datos son consistentes
-        y válidos.
-        
-        Validaciones aplicadas:
-        - Nombre no vacío y válido para nombres de archivo
-        - Texto no nulo (puede estar vacío si OCR falló)
-        - Lista de tablas inicializada (aunque esté vacía)
-        - Archivo fuente existe y es accesible
-        
-        Raises:
-            ValueError: Si alguna validación falla
-            FileNotFoundError: Si el archivo fuente no existe
-        """
+        """Validaciones básicas del documento."""
         # Validación: nombre debe ser válido para crear archivos
         if not self.name or not self.name.strip():
             raise ValueError("Document name cannot be empty")
@@ -179,70 +84,35 @@ class Document:
     
     @property
     def has_tables(self) -> bool:
-        """
-        Indica si el documento contiene tablas extraídas.
-        
-        Returns:
-            bool: True si se detectaron y extrajeron tablas, False en caso contrario
-        """
+        """True si el documento tiene tablas."""
         return len(self.tables) > 0
     
     @property
     def table_count(self) -> int:
-        """
-        Número de tablas extraídas del documento.
-        
-        Returns:
-            int: Cantidad de tablas detectadas en el documento
-        """
+        """Número de tablas extraídas."""
         return len(self.tables)
     
     @property
     def word_count(self) -> int:
-        """
-        Aproximación del número de palabras en el texto extraído.
-        
-        Útil para:
-        - Métricas de procesamiento
-        - Estimación de tiempo de lectura
-        - Validación de calidad de OCR
-        
-        Returns:
-            int: Número aproximado de palabras en el texto
-        """
+        """Número de palabras en el texto extraído."""
         return len(self.extracted_text.split()) if self.extracted_text else 0
     
     @property
     def quality_score(self) -> Optional[float]:
-        """
-        Puntuación de calidad del OCR aplicado al documento.
-        
-        Returns:
-            float: Puntuación de confianza promedio (0-100) o None si no disponible
-        """
+        """Puntuación de calidad del OCR (0-100)."""
         if self.ocr_result:
             return self.ocr_result.quality_score
         return None
     
     @property
     def is_high_quality(self) -> bool:
-        """
-        Indica si el documento fue procesado con alta calidad.
-        
-        Returns:
-            bool: True si la calidad es superior al 80%, False en caso contrario
-        """
+        """True si la calidad es superior al 80%."""
         quality = self.quality_score
         return quality is not None and quality >= 80.0
     
     @property
     def processing_summary(self) -> Dict[str, Any]:
-        """
-        Resumen de métricas de procesamiento del documento.
-        
-        Returns:
-            Dict: Diccionario con métricas clave del procesamiento
-        """
+        """Resumen de métricas del procesamiento."""
         summary = {
             'word_count': self.word_count,
             'table_count': self.table_count,
