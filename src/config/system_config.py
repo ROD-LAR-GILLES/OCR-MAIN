@@ -1,9 +1,6 @@
 # config/system_config.py
 """
 Configuraciones del sistema OCR-CLI.
-
-Este módulo centraliza todas las configuraciones del sistema,
-incluyendo parámetros de calidad, preprocesamiento y procesamiento.
 """
 from dataclasses import dataclass
 from typing import Dict, Any, Optional

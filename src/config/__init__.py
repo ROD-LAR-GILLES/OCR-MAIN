@@ -1,6 +1,6 @@
 # config/__init__.py
 """
-Módulo de configuración para el sistema OCR mejorado.
+Módulo de configuración OCR.
 """
 
 from .system_config import (
