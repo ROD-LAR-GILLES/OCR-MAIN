@@ -1,12 +1,16 @@
 """
-Lógica de menús y validación de opciones.
-
+Lógica de menús y validación de opciones para CLI.
 """
 
 from typing import List, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
+import logging
+
 from config.system_config import SystemConfig
+from shared.constants import ENGINE_TYPE_BASIC, ENGINE_TYPE_OPENCV, DEFAULT_LANGUAGE
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -77,22 +81,33 @@ def create_ocr_config_from_user_choices(
 ) -> SystemConfig:
     """
     Crea una configuración OCR según la opción y ajustes elegidos.
-
+    
+    Args:
+        engine_choice: 1 para básico, 2 para OpenCV
+        enable_deskewing: Activar corrección de inclinación
+        enable_denoising: Activar eliminación de ruido
+        enable_contrast: Activar mejora de contraste
+        
+    Returns:
+        SystemConfig configurado
+        
+    Raises:
+        ValueError: Si engine_choice no es válido
     """
     if engine_choice == 1:
         return SystemConfig(
-            language="spa",
+            language=DEFAULT_LANGUAGE,
             dpi=300,
-            engine_type="basic",
+            engine_type=ENGINE_TYPE_BASIC,
             enable_deskewing=False,
             enable_denoising=False,
             enable_contrast_enhancement=False
         )
     elif engine_choice == 2:
         return SystemConfig(
-            language="spa",
+            language=DEFAULT_LANGUAGE,
             dpi=300,
-            engine_type="opencv",
+            engine_type=ENGINE_TYPE_OPENCV,
             enable_deskewing=enable_deskewing,
             enable_denoising=enable_denoising,
             enable_contrast_enhancement=enable_contrast
@@ -105,64 +120,74 @@ def detect_pdf_type_automatically(pdf_path: Path) -> Tuple[SystemConfig, str]:
     """
     Detecta automáticamente el tipo de PDF y retorna la configuración óptima.
     
+    Args:
+        pdf_path: Ruta al archivo PDF a analizar
+        
     Returns:
         Tuple[SystemConfig, str]: (configuración_óptima, descripción_detección)
     """
     try:
+        logger.info(f"Analizando tipo de PDF: {pdf_path.name}")
+        
         # Análisis básico usando Path y heurísticas simples
         filename = pdf_path.name.lower()
         
         # Heurísticas basadas en nombre de archivo
         if any(word in filename for word in ['scan', 'escaneado', 'escan']):
             config = SystemConfig(
-                language="spa",
+                language=DEFAULT_LANGUAGE,
                 dpi=300,
-                engine_type="opencv",
+                engine_type=ENGINE_TYPE_OPENCV,
                 enable_deskewing=True,
                 enable_denoising=True,
                 enable_contrast_enhancement=True
             )
-            return config, "Documento escaneado - OCR intensivo con preprocesamiento"
-        
-        if any(word in filename for word in ['digital', 'nativo', 'text']):
+            description = "Documento escaneado - OCR intensivo con preprocesamiento"
+            
+        elif any(word in filename for word in ['digital', 'nativo', 'text']):
             config = SystemConfig(
-                language="spa",
+                language=DEFAULT_LANGUAGE,
                 dpi=150,
-                engine_type="basic",
+                engine_type=ENGINE_TYPE_BASIC,
                 enable_deskewing=False,
                 enable_denoising=False,
                 enable_contrast_enhancement=False
             )
-            return config, "PDF nativo - Extracción directa de texto"
-        
-        if any(word in filename for word in ['tabla', 'table', 'form', 'formulario']):
+            description = "PDF nativo - Extracción directa de texto"
+            
+        elif any(word in filename for word in ['tabla', 'table', 'form', 'formulario']):
             config = SystemConfig(
-                language="spa",
+                language=DEFAULT_LANGUAGE,
                 dpi=300,
-                engine_type="opencv",
+                engine_type=ENGINE_TYPE_OPENCV,
                 enable_deskewing=False,
                 enable_denoising=True,
                 enable_contrast_enhancement=True
             )
-            return config, "Documento con tablas - Extracción estructurada"
+            description = "Documento con tablas - Extracción estructurada"
+            
+        else:
+            # Por defecto: configuración balanceada para documento mixto
+            config = SystemConfig(
+                language=DEFAULT_LANGUAGE,
+                dpi=250,
+                engine_type=ENGINE_TYPE_OPENCV,
+                enable_deskewing=True,
+                enable_denoising=False,
+                enable_contrast_enhancement=True
+            )
+            description = "Documento mixto - Configuración balanceada"
         
-        # Por defecto: configuración balanceada para documento mixto
-        config = SystemConfig(
-            language="spa",
-            dpi=250,
-            engine_type="opencv",
-            enable_deskewing=True,
-            enable_denoising=False,
-            enable_contrast_enhancement=True
-        )
-        return config, "Documento mixto - Configuración balanceada"
+        logger.info(f"Tipo detectado: {description}")
+        return config, description
         
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Error en detección automática: {e}, usando configuración segura")
         # Fallback seguro con configuración conservadora
         config = SystemConfig(
-            language="spa",
+            language=DEFAULT_LANGUAGE,
             dpi=300,
-            engine_type="opencv",
+            engine_type=ENGINE_TYPE_OPENCV,
             enable_deskewing=True,
             enable_denoising=False,
             enable_contrast_enhancement=True

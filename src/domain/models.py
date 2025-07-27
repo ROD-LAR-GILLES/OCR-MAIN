@@ -1,11 +1,9 @@
 # domain/models.py
 """
-Modelos de dominio para el sistema OCR.
+Modelos de dominio para el sistema OCR - Entidades puras sin dependencias externas.
 """
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import List, Any, Dict, Optional
-from datetime import datetime
 
 
 @dataclass
@@ -40,7 +38,6 @@ class OCRResult:
     metrics: ProcessingMetrics
     page_count: int
     processing_time: float
-    timestamp: datetime = field(default_factory=datetime.now)
     
     @property
     def quality_score(self) -> float:
@@ -58,7 +55,7 @@ class Document:
     """Documento procesado con texto y tablas extraídas."""
     
     name: str  # Nombre identificador del documento
-    source_path: Path  # Ruta al PDF original
+    source_path: str  # Ruta al PDF original como string
     extracted_text: str  # Texto extraído por OCR
     tables: List[Any]  # Tablas como DataFrames
     ocr_result: Optional[OCRResult] = None  # Métricas detalladas
@@ -78,9 +75,9 @@ class Document:
         if self.tables is None:
             self.tables = []
             
-        # Validación: archivo fuente debe existir
-        if not self.source_path.exists():
-            raise FileNotFoundError(f"Source file not found: {self.source_path}")
+        # Validación: fuente debe estar definida
+        if not self.source_path or not self.source_path.strip():
+            raise ValueError("Source path cannot be empty")
     
     @property
     def has_tables(self) -> bool:

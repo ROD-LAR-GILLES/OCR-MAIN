@@ -4,17 +4,20 @@ Configuraciones del sistema OCR-CLI.
 """
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
-from pathlib import Path
+from shared.constants import (
+    DEFAULT_LANGUAGE, DEFAULT_DPI, DEFAULT_CONFIDENCE_THRESHOLD,
+    ENGINE_TYPE_BASIC, ENGINE_TYPE_OPENCV
+)
 
 
 @dataclass
 class SystemConfig:
     """Configuración unificada del sistema OCR-CLI."""
     # OCR Settings
-    language: str = "spa"
-    dpi: int = 300
-    confidence_threshold: float = 60.0
-    engine_type: str = "basic"  # "basic" o "opencv"
+    language: str = DEFAULT_LANGUAGE
+    dpi: int = DEFAULT_DPI
+    confidence_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD
+    engine_type: str = ENGINE_TYPE_BASIC  # "basic" o "opencv"
     
     # OpenCV Preprocessing
     enable_deskewing: bool = True
@@ -32,7 +35,7 @@ class SystemConfig:
         return cls(
             dpi=600,
             confidence_threshold=80.0,
-            engine_type="opencv",
+            engine_type=ENGINE_TYPE_OPENCV,
             enable_deskewing=True,
             enable_denoising=True,
             enable_contrast_enhancement=True,
@@ -46,7 +49,7 @@ class SystemConfig:
         return cls(
             dpi=150,
             confidence_threshold=50.0,
-            engine_type="basic",
+            engine_type=ENGINE_TYPE_BASIC,
             enable_deskewing=False,
             enable_denoising=False,
             enable_contrast_enhancement=True,

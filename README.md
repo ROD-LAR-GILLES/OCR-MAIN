@@ -115,7 +115,74 @@ OCR-CLI es una aplicación de línea de comandos diseñada con arquitectura hexa
 
 ## Estructura del Sistema
 
-### Estructura Final Limpia
+### Estructura Ideal (Clean Architecture)
+```
+src/
+├── domain/                      # Capa de Dominio (sin dependencias externas)
+│   ├── __init__.py
+│   ├── entities/
+│   │   ├── __init__.py
+│   │   ├── document.py          # Entidades de dominio puras
+│   │   └── processing_metrics.py
+│   ├── value_objects/
+│   │   ├── __init__.py
+│   │   └── ocr_result.py        # Objetos de valor
+│   └── services/
+│       ├── __init__.py
+│       └── document_validator.py # Servicios de dominio
+├── application/                 # Capa de Aplicación (casos de uso)
+│   ├── __init__.py
+│   ├── ports/                   # Interfaces/contratos
+│   │   ├── __init__.py
+│   │   ├── ocr_port.py
+│   │   ├── table_extractor_port.py
+│   │   └── storage_port.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   └── document_processor.py # Casos de uso principales
+│   └── dto/
+│       ├── __init__.py
+│       └── document_dto.py      # DTOs para boundaries
+├── infrastructure/              # Capa de Infraestructura (adaptadores)
+│   ├── __init__.py
+│   ├── ocr/
+│   │   ├── __init__.py
+│   │   ├── tesseract_adapter.py
+│   │   └── opencv_adapter.py
+│   ├── storage/
+│   │   ├── __init__.py
+│   │   └── filesystem_adapter.py
+│   ├── table/
+│   │   ├── __init__.py
+│   │   └── pdfplumber_adapter.py
+│   └── config/
+│       ├── __init__.py
+│       └── settings.py          # Configuración centralizada
+├── interfaces/                  # Capa de Interfaces (UI/API)
+│   ├── __init__.py
+│   ├── cli/
+│   │   ├── __init__.py
+│   │   ├── main.py              # Entry point
+│   │   ├── commands/
+│   │   │   ├── __init__.py
+│   │   │   └── process_command.py
+│   │   └── presenters/
+│   │       ├── __init__.py
+│   │       └── console_presenter.py
+│   └── api/                     # Futura API REST
+│       ├── __init__.py
+│       └── endpoints/
+└── shared/                      # Utilidades compartidas
+    ├── __init__.py
+    ├── constants.py
+    ├── exceptions.py
+    └── utils/
+        ├── __init__.py
+        ├── file_utils.py
+        └── validation_utils.py
+```
+
+### Estructura Actual (Para Refactoring)
 ```
 ├── adapters/
 │   ├── ocr_adapters.py          # TesseractAdapter + TesseractOpenCVAdapter  
@@ -138,9 +205,22 @@ OCR-CLI es una aplicación de línea de comandos diseñada con arquitectura hexa
     └── rules.py                 # Reglas de negocio
 ```
 
-### Archivos Eliminados (Duplicación Removida)
-- ~~`enhanced_simple_menu.py`~~ (duplicado con emoticones)
-- ~~`enhanced_menu.py`~~ (dependencia questionary innecesaria)
+### Problemas Arquitecturales Identificados
+
+#### 1. Violaciones de Clean Architecture
+- **Domain → Infrastructure**: `domain/models.py` usa `Path.exists()` y `datetime`
+- **Application → Infrastructure**: `controllers.py` importa adaptadores concretos directamente
+- **Utilities → Configuration**: `menu_logic.py` importa `SystemConfig`
+
+#### 2. Responsabilidades Mezcladas
+- Lógica de UI en `utils/menu_logic.py`
+- Configuración distribuida entre múltiples archivos
+- Validaciones de dominio en adaptadores
+
+#### 3. Código Duplicado
+- Validaciones de PDF en múltiples lugares
+- Manejo de errores repetido en CLI
+- Lógica de preprocesamiento fragmentada
 - ~~`main_enhanced.py`~~ (punto de entrada duplicado)
 - ~~`ocr_tesseract.py`~~ + ~~`ocr_tesseract_opencv.py`~~ + ~~`ocr_enhanced.py`~~ → **unificados**
 - ~~`use_cases.py`~~ + ~~`enhanced_use_cases.py`~~ + ~~`document_use_cases.py`~~ → **unificados**

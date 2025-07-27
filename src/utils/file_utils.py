@@ -4,39 +4,110 @@ Utilidades para manipulación de archivos PDF.
 
 from pathlib import Path
 from typing import List
+import logging
+
+from shared.constants import SUPPORTED_PDF_EXTENSIONS
+from shared.exceptions import DocumentNotFoundError, InvalidDocumentError
+
+logger = logging.getLogger(__name__)
 
 
 def discover_pdf_files(directory: Path) -> List[str]:
     """
     Lista archivos PDF en un directorio.
+    
+    Args:
+        directory: Directorio donde buscar PDFs
+        
+    Returns:
+        Lista de nombres de archivos PDF
+        
+    Raises:
+        DocumentNotFoundError: Si el directorio no existe
+        InvalidDocumentError: Si no es un directorio válido
     """
     if not directory.exists():
-        raise FileNotFoundError(f"El directorio {directory} no existe")
+        raise DocumentNotFoundError(f"El directorio {directory} no existe")
     
     if not directory.is_dir():
-        raise NotADirectoryError(f"{directory} no es un directorio")
+        raise InvalidDocumentError(f"{directory} no es un directorio")
     
     try:
-        pdf_files = [p.name for p in directory.glob("*.pdf") if p.is_file()]
+        pdf_files = []
+        for p in directory.glob("*.pdf"):
+            if p.is_file() and _is_valid_pdf_file(p):
+                pdf_files.append(p.name)
+        
+        logger.info(f"Encontrados {len(pdf_files)} archivos PDF en {directory}")
         return sorted(pdf_files)
+        
     except PermissionError as e:
-        raise PermissionError(f"Sin permisos para leer {directory}: {e}")
+        raise InvalidDocumentError(f"Sin permisos para leer {directory}: {e}")
 
 
 def validate_pdf_exists(directory: Path, filename: str) -> bool:
     """
-    Verifica si existe un archivo PDF en el directorio.
+    Verifica si existe un archivo PDF válido en el directorio.
+    
+    Args:
+        directory: Directorio donde buscar
+        filename: Nombre del archivo PDF
+        
+    Returns:
+        True si el archivo existe y es un PDF válido
     """
-    file_path = directory / filename
-    return file_path.exists() and file_path.is_file() and filename.endswith('.pdf')
+    try:
+        file_path = directory / filename
+        return (file_path.exists() and 
+                file_path.is_file() and 
+                _is_valid_pdf_file(file_path))
+    except Exception as e:
+        logger.warning(f"Error validando PDF {filename}: {e}")
+        return False
+
+
+def _is_valid_pdf_file(file_path: Path) -> bool:
+    """
+    Verifica si un archivo es un PDF válido.
+    
+    Args:
+        file_path: Ruta del archivo a validar
+        
+    Returns:
+        True si es un PDF válido
+    """
+    # Verificar extensión
+    if file_path.suffix.lower() not in SUPPORTED_PDF_EXTENSIONS:
+        return False
+    
+    # Verificar tamaño mínimo (PDFs vacíos son ~1KB)
+    if file_path.stat().st_size < 1024:
+        return False
+    
+    # Verificar header PDF básico
+    try:
+        with open(file_path, 'rb') as f:
+            header = f.read(8)
+            return header.startswith(b'%PDF-')
+    except Exception:
+        return False
 
 
 def get_file_info(file_path: Path) -> dict:
     """
     Devuelve información básica de un archivo.
+    
+    Args:
+        file_path: Ruta del archivo
+        
+    Returns:
+        Diccionario con información del archivo
+        
+    Raises:
+        DocumentNotFoundError: Si el archivo no existe
     """
     if not file_path.exists():
-        raise FileNotFoundError(f"El archivo {file_path} no existe")
+        raise DocumentNotFoundError(f"El archivo {file_path} no existe")
     
     stat = file_path.stat()
     return {
@@ -44,5 +115,20 @@ def get_file_info(file_path: Path) -> dict:
         "size_bytes": stat.st_size,
         "size_mb": round(stat.st_size / (1024 * 1024), 2),
         "modified": stat.st_mtime,
-        "is_readable": file_path.is_file()
+        "is_readable": file_path.is_file(),
+        "is_valid_pdf": _is_valid_pdf_file(file_path) if file_path.suffix.lower() == '.pdf' else False
     }
+
+
+def ensure_directory_exists(directory: Path) -> None:
+    """
+    Asegura que un directorio existe, creándolo si es necesario.
+    
+    Args:
+        directory: Directorio a crear
+    """
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Directorio asegurado: {directory}")
+    except Exception as e:
+        raise InvalidDocumentError(f"No se pudo crear directorio {directory}: {e}")
