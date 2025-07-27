@@ -1,5 +1,3 @@
-# application/use_cases.py
-# application/use_cases.py
 """
 Casos de uso para procesamiento de documentos PDF.
 """
@@ -16,7 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class ProcessDocument:
-    """Caso de uso básico para procesamiento de documentos PDF."""
+    """
+    Caso de uso básico para procesamiento de documentos PDF.
+    
+    """
 
     def __init__(
         self,
