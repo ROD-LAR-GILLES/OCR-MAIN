@@ -1,8 +1,5 @@
 """
 Controladores de aplicación para OCR-CLI.
-
-Este módulo contiene la lógica de coordinación de alto nivel que orquesta
-los casos de uso sin depender de detalles de interfaz específicos.
 """
 
 import time
@@ -18,10 +15,7 @@ from config.system_config import SystemConfig
 
 class DocumentController:
     """
-    Controlador para operaciones de procesamiento de documentos.
-    
-    Encapsula la lógica de coordinación entre adaptadores y casos de uso,
-    permitiendo que sea reutilizable desde diferentes interfaces.
+    Controlador para procesar documentos PDF con diferentes configuraciones OCR.
     """
     
     def __init__(self, pdf_dir: Path, output_dir: Path):
@@ -41,21 +35,10 @@ class DocumentController:
         ocr_config: SystemConfig
     ) -> Tuple[bool, Dict[str, Any]]:
         """
-        Procesa un documento PDF usando la configuración especificada.
+        Procesa un PDF usando la configuración OCR especificada.
         
-        Args:
-            filename (str): Nombre del archivo PDF a procesar
-            ocr_config (OCRConfig): Configuración del motor OCR
-            
         Returns:
-            Tuple[bool, Dict]: (éxito, información_del_procesamiento)
-            
-        Example:
-            >>> controller = DocumentController(Path("/pdfs"), Path("/output"))
-            >>> config = OCRConfig("basic")
-            >>> success, info = controller.process_document("doc.pdf", config)
-            >>> print(info["processing_time"])
-            2.34
+            (éxito, información_procesamiento)
         """
         pdf_path = self.pdf_dir / filename
         

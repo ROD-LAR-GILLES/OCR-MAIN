@@ -1,9 +1,7 @@
 # application/use_cases.py
+# application/use_cases.py
 """
-Casos de uso unificados para procesamiento de documentos.
-
-Este módulo contiene todos los casos de uso relacionados con el procesamiento
-de documentos PDF, desde básico hasta avanzado con métricas de calidad.
+Casos de uso para procesamiento de documentos PDF.
 """
 from pathlib import Path
 from typing import Tuple, List, Any, Dict, Optional
@@ -18,14 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class ProcessDocument:
-    """
-    Caso de uso básico para procesamiento de documentos PDF.
-    
-    Orquesta el flujo completo:
-    1. Extracción de texto con OCR
-    2. Extracción de tablas
-    3. Almacenamiento de resultados
-    """
+    """Caso de uso básico para procesamiento de documentos PDF."""
 
     def __init__(
         self,
@@ -33,14 +24,7 @@ class ProcessDocument:
         table_extractor: TableExtractorPort,
         storage: StoragePort,
     ) -> None:
-        """
-        Inicializa el caso de uso con las dependencias inyectadas.
-        
-        Args:
-            ocr: Servicio de OCR
-            table_extractor: Servicio de extracción de tablas
-            storage: Servicio de almacenamiento
-        """
+        """Inicializa con dependencias inyectadas."""
         self.ocr = ocr
         self.table_extractor = table_extractor
         self.storage = storage
@@ -53,7 +37,7 @@ class ProcessDocument:
             pdf_path: Ruta al archivo PDF
             
         Returns:
-            Tuple[str, List[str]]: (archivo_texto_principal, lista_todos_archivos)
+            Tuple[str, List[str]]: (archivo_texto_principal, lista_archivos_generados)
         """
         logger.info(f"Iniciando procesamiento de: {pdf_path}")
         start_time = time.time()
@@ -80,15 +64,7 @@ class ProcessDocument:
 
 
 class EnhancedProcessDocument:
-    """
-    Caso de uso avanzado con métricas de calidad y procesamiento inteligente.
-    
-    Extiende el procesamiento básico con:
-    - Análisis de calidad
-    - Métricas de procesamiento
-    - Validación de resultados
-    - Reintento automático en caso de baja calidad
-    """
+    """Caso de uso avanzado con métricas de calidad."""
 
     def __init__(
         self,
@@ -98,16 +74,7 @@ class EnhancedProcessDocument:
         min_quality_threshold: float = 60.0,
         enable_auto_retry: bool = True
     ) -> None:
-        """
-        Inicializa el caso de uso mejorado.
-        
-        Args:
-            ocr: Servicio de OCR (preferiblemente con métricas)
-            table_extractor: Servicio de extracción de tablas
-            storage: Servicio de almacenamiento
-            min_quality_threshold: Umbral mínimo de calidad
-            enable_auto_retry: Activar reintento automático
-        """
+        """Inicializa el caso de uso avanzado."""
         self.ocr = ocr
         self.table_extractor = table_extractor
         self.storage = storage
@@ -123,10 +90,7 @@ class EnhancedProcessDocument:
             pdf_path: Ruta al archivo PDF
             
         Returns:
-            Tuple con:
-            - str: Archivo de texto principal
-            - List[str]: Lista de archivos generados
-            - Dict[str, Any]: Métricas de procesamiento
+            Tuple con archivo principal, lista de archivos y métricas
         """
         logger.info(f"Iniciando procesamiento mejorado de: {pdf_path}")
         start_time = time.time()
