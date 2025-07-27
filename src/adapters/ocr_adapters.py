@@ -1,10 +1,6 @@
 # adapters/ocr_adapters.py
 """
-Adaptadores de OCR unificados para el sistema OCR-CLI.
-
-Este módulo contiene todos los adaptadores OCR disponibles:
-- TesseractAdapter: OCR básico con Tesseract
-- TesseractOpenCVAdapter: OCR con preprocesamiento OpenCV
+Adaptadores de OCR para Tesseract básico y con OpenCV.
 """
 from pathlib import Path
 from typing import List, Tuple
@@ -24,10 +20,6 @@ class TesseractAdapter(OCRPort):
     """
     Adaptador básico de OCR usando Tesseract.
     
-    Ideal para:
-    - Documentos con buena calidad de imagen
-    - Procesamiento rápido
-    - PDFs nativos con texto claro
     """
 
     def __init__(self, lang: str = "spa", dpi: int = 300) -> None:
@@ -88,11 +80,7 @@ class TesseractAdapter(OCRPort):
 class TesseractOpenCVAdapter(OCRPort):
     """
     Adaptador avanzado de OCR con preprocesamiento OpenCV.
-    
-    Ideal para:
-    - Documentos escaneados de baja calidad
-    - Imágenes con ruido o inclinación
-    - Procesamiento de alta precisión
+
     """
 
     def __init__(

@@ -1,9 +1,6 @@
 # adapters/pdf_info_adapter.py
 """
-Adaptador para obtener información de archivos PDF.
-
-Este adaptador maneja las dependencias específicas de librerías PDF
-manteniendo la capa de aplicación libre de dependencias externas.
+Obtención de información de archivos PDF.
 """
 from pathlib import Path
 from typing import Optional
@@ -16,8 +13,6 @@ class PdfInfoAdapter:
     """
     Adaptador para extraer metadatos básicos de archivos PDF.
     
-    Encapsula las dependencias de librerías específicas de PDF
-    evitando que la capa de aplicación dependa directamente de ellas.
     """
     
     def get_page_count(self, pdf_path: Path) -> int:
