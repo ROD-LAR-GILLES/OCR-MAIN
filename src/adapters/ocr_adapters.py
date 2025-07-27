@@ -226,13 +226,19 @@ class TesseractOpenCVAdapter(OCRPort):
             # Detectar líneas con transformada de Hough
             lines = cv2.HoughLines(edges, 1, np.pi/180, threshold=100)
             
-            if lines is not None:
+            if lines is not None and len(lines) > 0:
                 # Calcular ángulo promedio
                 angles = []
-                for rho, theta in lines[:min(10, len(lines))]:
-                    angle = theta * 180 / np.pi - 90
-                    if abs(angle) < 45:  # Solo ángulos razonables
-                        angles.append(angle)
+                for line in lines[:min(10, len(lines))]:
+                    try:
+                        # lines viene en formato [[rho, theta]] 
+                        rho, theta = line[0]
+                        angle = theta * 180 / np.pi - 90
+                        if abs(angle) < 45:  # Solo ángulos razonables
+                            angles.append(angle)
+                    except (IndexError, ValueError) as line_error:
+                        # Saltar líneas mal formateadas
+                        continue
                 
                 if angles:
                     # Usar mediana para robustez
@@ -247,6 +253,7 @@ class TesseractOpenCVAdapter(OCRPort):
                         logger.debug(f"Corregida inclinación: {rotation_angle:.2f} grados")
                         
         except Exception as e:
-            logger.warning(f"Error en corrección de inclinación: {e}")
+            # Cambiar a debug para no mostrar errores al usuario
+            logger.debug(f"Error en corrección de inclinación: {e}")
         
         return image
