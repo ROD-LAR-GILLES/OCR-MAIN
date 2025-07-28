@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Any, Tuple
 from enum import Enum
 import pdfplumber
-import fitz  # PyMuPDF
+import fitz 
 
 
 class PDFType(Enum):
@@ -19,14 +19,14 @@ class PDFType(Enum):
 
 
 class PDFAnalyzer:
-    """Analizador automático de características de PDFs."""
+    """
+    Analizador automático de características de PDFs.
+    """
     
     def analyze_pdf(self, pdf_path: Path) -> Tuple[PDFType, Dict[str, Any]]:
         """
         Analiza un PDF y determina el tipo y estrategia óptima.
         
-        Returns:
-            Tuple[PDFType, Dict]: Tipo detectado y métricas de análisis
         """
         metrics = self._extract_pdf_metrics(pdf_path)
         pdf_type = self._classify_pdf_type(metrics)
@@ -34,7 +34,10 @@ class PDFAnalyzer:
         return pdf_type, metrics
     
     def _extract_pdf_metrics(self, pdf_path: Path) -> Dict[str, Any]:
-        """Extrae métricas del PDF para clasificación."""
+        """
+        Extrae métricas del PDF para clasificación.
+        """
+
         metrics = {
             'total_pages': 0,
             'text_extractable_pages': 0,
@@ -86,7 +89,9 @@ class PDFAnalyzer:
         return metrics
     
     def _classify_pdf_type(self, metrics: Dict[str, Any]) -> PDFType:
-        """Clasifica el tipo de PDF basado en las métricas extraídas."""
+        """
+        Clasifica el tipo de PDF basado en las métricas extraídas.
+        """
         
         # 1. PDF Escaneado: Pocas fuentes, poco texto extraíble, muchas imágenes
         if (not metrics['has_fonts'] and 
@@ -112,7 +117,9 @@ class PDFAnalyzer:
         return PDFType.MIXED
     
     def get_optimal_config(self, pdf_type: PDFType) -> Dict[str, Any]:
-        """Retorna configuración óptima para el tipo de PDF detectado."""
+        """
+        Retorna configuración óptima para el tipo de PDF detectado.
+        """
         
         configs = {
             PDFType.SCANNED: {
