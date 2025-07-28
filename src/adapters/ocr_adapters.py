@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 class TesseractAdapter(OCRPort):
     """
     Adaptador básico de OCR usando Tesseract.
-    
     """
 
     def __init__(self, lang: str = "spa", dpi: int = 300) -> None:
