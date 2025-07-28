@@ -16,15 +16,6 @@ def discover_pdf_files(directory: Path) -> List[str]:
     """
     Lista archivos PDF en un directorio.
     
-    Args:
-        directory: Directorio donde buscar PDFs
-        
-    Returns:
-        Lista de nombres de archivos PDF
-        
-    Raises:
-        DocumentNotFoundError: Si el directorio no existe
-        InvalidDocumentError: Si no es un directorio válido
     """
     if not directory.exists():
         raise DocumentNotFoundError(f"El directorio {directory} no existe")
@@ -49,12 +40,6 @@ def validate_pdf_exists(directory: Path, filename: str) -> bool:
     """
     Verifica si existe un archivo PDF válido en el directorio.
     
-    Args:
-        directory: Directorio donde buscar
-        filename: Nombre del archivo PDF
-        
-    Returns:
-        True si el archivo existe y es un PDF válido
     """
     try:
         file_path = directory / filename
@@ -69,12 +54,7 @@ def validate_pdf_exists(directory: Path, filename: str) -> bool:
 def _is_valid_pdf_file(file_path: Path) -> bool:
     """
     Verifica si un archivo es un PDF válido.
-    
-    Args:
-        file_path: Ruta del archivo a validar
-        
-    Returns:
-        True si es un PDF válido
+
     """
     # Verificar extensión
     if file_path.suffix.lower() not in SUPPORTED_PDF_EXTENSIONS:
@@ -97,14 +77,6 @@ def get_file_info(file_path: Path) -> dict:
     """
     Devuelve información básica de un archivo.
     
-    Args:
-        file_path: Ruta del archivo
-        
-    Returns:
-        Diccionario con información del archivo
-        
-    Raises:
-        DocumentNotFoundError: Si el archivo no existe
     """
     if not file_path.exists():
         raise DocumentNotFoundError(f"El archivo {file_path} no existe")
@@ -124,8 +96,6 @@ def ensure_directory_exists(directory: Path) -> None:
     """
     Asegura que un directorio existe, creándolo si es necesario.
     
-    Args:
-        directory: Directorio a crear
     """
     try:
         directory.mkdir(parents=True, exist_ok=True)
