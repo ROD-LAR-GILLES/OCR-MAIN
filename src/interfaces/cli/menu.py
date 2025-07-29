@@ -8,7 +8,7 @@ from pathlib import Path
 
 from application.use_cases import ProcessDocument
 from infrastructure.config.system_config import SystemConfig
-# Corregir import
+# Corregir este import que está causando el error
 from infrastructure.factories.adapter_factory import AdapterFactory
 from domain.exceptions import DomainError
 
@@ -20,48 +20,65 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main():
-    """Punto de entrada principal de la CLI."""
-    parser = argparse.ArgumentParser(description="Sistema OCR para procesamiento de PDFs")
+def parse_arguments():
+    """Parsea argumentos de línea de comandos."""
+    parser = argparse.ArgumentParser(
+        description="Sistema OCR para procesamiento de documentos PDF"
+    )
+    
     parser.add_argument(
         "pdf_path",
         type=Path,
         help="Ruta al archivo PDF a procesar"
     )
+    
     parser.add_argument(
         "--engine",
         choices=["basic", "opencv"],
         default="basic",
         help="Motor OCR a utilizar (default: basic)"
     )
+    
     parser.add_argument(
         "--output-dir",
         type=Path,
         default=Path("resultado"),
         help="Directorio de salida (default: resultado)"
     )
+    
     parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="Activar logging detallado"
     )
     
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def main():
+    """Punto de entrada principal del CLI."""
+    args = parse_arguments()
+    
     # Configurar nivel de logging
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
-
+    
     try:
-        logger.info("Iniciando sistema OCR...")
+        # Validar archivo PDF
+        if not args.pdf_path.exists():
+            raise FileNotFoundError(f"El archivo {args.pdf_path} no existe")
+        
+        if not args.pdf_path.suffix.lower() == '.pdf':
+            raise ValueError(f"El archivo debe ser un PDF")
         
         # Crear configuración
-        config = SystemConfig(
-            engine_type=args.engine,
-            output_dir=args.output_dir
-        )
+        config = SystemConfig()
+        config.engine_type = args.engine
+        config.output_dir = args.output_dir
         
-        # Crear adaptadores usando el factory
+        logger.info(f"Configuración: engine={config.engine_type}, output_dir={config.output_dir}")
+        
+        # Crear adaptadores usando factory
         factory = AdapterFactory()
         ocr = factory.create_ocr_adapter(config)
         table_extractor = factory.create_table_extractor()
@@ -76,25 +93,25 @@ def main():
         logger.info(f"Procesando: {args.pdf_path}")
         document = process_doc.execute(args.pdf_path)
         
-        print(f"\n Proceso completado exitosamente!")
-        print(f" Documento: {document.name}")
-        print(f" Texto extraído: {len(document.extracted_text)} caracteres")
-        print(f" Tablas encontradas: {len(document.tables)}")
-        print(f" Resultados guardados en: {config.output_dir}")
+        print(f"\nProceso completado exitosamente!")
+        print(f"Documento: {document.name}")
+        print(f"Texto extraído: {len(document.extracted_text)} caracteres")
+        print(f"Tablas encontradas: {len(document.tables)}")
+        print(f"Resultados guardados en: {config.output_dir}")
         
         return 0
         
     except DomainError as e:
         logger.error(f"Error del dominio: {str(e)}")
-        print(f" Error: {str(e)}")
+        print(f"Error: {str(e)}")
         return 1
     except FileNotFoundError as e:
         logger.error(f"Archivo no encontrado: {str(e)}")
-        print(f" Archivo no encontrado: {str(e)}")
+        print(f"Archivo no encontrado: {str(e)}")
         return 1
     except Exception as e:
         logger.error(f"Error inesperado: {str(e)}")
-        print(f" Error inesperado: {str(e)}")
+        print(f"Error inesperado: {str(e)}")
         return 2
 
 
