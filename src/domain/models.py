@@ -1,26 +1,27 @@
 """
-Modelos de dominio - ARCHIVO DE COMPATIBILIDAD.
-Este archivo mantiene la compatibilidad mientras migramos.
+Modelos del dominio.
 """
-# Importar desde la nueva estructura
-from domain.models.processing_metrics import ProcessingMetrics as NewProcessingMetrics
-from domain.models.ocr_result import OCRResult as NewOCRResult
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Dict, Any, Optional
 
-# Crear alias para mantener compatibilidad
-ProcessingMetrics = NewProcessingMetrics
-OCRResult = NewOCRResult
-
-# Mantener las clases existentes por compatibilidad
-from dataclasses import dataclass, field
-from typing import List, Any, Dict, Optional
 
 @dataclass
 class Document:
-    """Documento procesado - mantenido por compatibilidad."""
+    """Modelo de documento procesado."""
     name: str
-    source_path: str
-    extracted_text: str = ""
-    tables: list = field(default_factory=list)
-
-# Re-exportar todo
-__all__ = ['ProcessingMetrics', 'OCRResult', 'Document']
+    path: Path
+    extracted_text: str
+    tables: List[Dict[str, Any]]
+    confidence: float
+    output_directory: Optional[Path] = None
+    generated_files: Optional[List[Path]] = None
+    
+    def __str__(self) -> str:
+        return f"Document(name='{self.name}', confidence={self.confidence:.1f}%)"
+    
+    def __repr__(self) -> str:
+        return (f"Document(name='{self.name}', "
+                f"confidence={self.confidence:.1f}%, "
+                f"tables={len(self.tables)}, "
+                f"text_length={len(self.extracted_text)})")
