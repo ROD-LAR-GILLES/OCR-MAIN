@@ -9,11 +9,13 @@ from typing import List, Dict, Any, Optional
 @dataclass
 class Document:
     """Modelo de documento procesado."""
+    # Argumentos requeridos (sin valores por defecto)
     name: str
     path: Path
     extracted_text: str
     tables: List[Dict[str, Any]]
     confidence: float
+    # Argumentos opcionales (con valores por defecto)
     output_directory: Optional[Path] = None
     generated_files: Optional[List[Path]] = None
     
