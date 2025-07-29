@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Optional
 
 from application.use_cases import ProcessDocument
-from infrastructure.config import SystemConfig
-from shared.factories.adapter_factory import AdapterFactory
+from infrastructure.config.system_config import SystemConfig
+# Corregir import
+from infrastructure.factories.adapter_factory import AdapterFactory
 from domain.exceptions import DomainError
 
 # Configurar logging
