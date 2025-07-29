@@ -10,12 +10,14 @@ show_help() {
     echo "Opciones:"
     echo "  help          Mostrar esta ayuda"
     echo "  build         Construir imagen Docker"
+    echo "  menu          Iniciar menú interactivo"
     echo "  basic FILE    Procesar con motor básico"
     echo "  opencv FILE   Procesar con motor OpenCV"
     echo "  test          Ejecutar pruebas"
     echo ""
     echo "Ejemplos:"
     echo "  $0 build"
+    echo "  $0 menu"
     echo "  $0 basic documento.pdf"
     echo "  $0 opencv documento.pdf"
 }
@@ -24,6 +26,12 @@ show_help() {
 build_image() {
     echo " Construyendo imagen Docker..."
     docker-compose build
+}
+
+# Función para iniciar menú interactivo
+start_menu() {
+    echo " Iniciando menú interactivo..."
+    docker-compose run --rm ocr python -m interfaces.cli.interactive_menu
 }
 
 # Función para procesar con motor básico
@@ -59,7 +67,6 @@ run_tests() {
     print(' Importaciones funcionando')
     from interfaces.cli.menu import main
     from application.use_cases import ProcessDocument
-    from shared.factories.adapter_factory import AdapterFactory
     print(' Todas las importaciones exitosas')
     "
 }
@@ -71,6 +78,9 @@ case "$1" in
         ;;
     "build")
         build_image
+        ;;
+    "menu")
+        start_menu
         ;;
     "basic")
         process_basic "$2"
