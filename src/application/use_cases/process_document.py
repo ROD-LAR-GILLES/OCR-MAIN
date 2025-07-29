@@ -41,38 +41,39 @@ class ProcessDocument:
         try:
             logger.info(f"Iniciando procesamiento de: {pdf_path}")
             
-            # Validar que el archivo existe
-            if not pdf_path.exists():
-                raise ProcessingError(f"Archivo no encontrado: {pdf_path}")
-            
-            # Extraer texto usando OCR
+            # 1. Extraer texto usando OCR
             logger.info("Extrayendo texto...")
-            text = self.ocr.extract_text(pdf_path)
+            extracted_text = self.ocr.extract_text(pdf_path)
+            confidence = self.ocr.get_confidence()
             
-            # Extraer tablas
+            # 2. Extraer tablas
             logger.info("Extrayendo tablas...")
             tables = self.table_extractor.extract_tables(pdf_path)
             
-            # Crear documento con resultados
+            # 3. Guardar resultados (con numeración automática)
+            doc_name = pdf_path.stem  # Nombre sin extensión
+            logger.info(f"Guardando resultados para: {doc_name}")
+            
+            output_dir, generated_files = self.storage.save(
+                doc_name, extracted_text, tables, pdf_path
+            )
+            
+            # 4. Crear documento resultado
             document = Document(
-                name=pdf_path.stem,
-                source_path=str(pdf_path),
-                extracted_text=text,
-                tables=tables
+                name=output_dir.name,  # Usar el nombre único generado
+                path=pdf_path,
+                extracted_text=extracted_text,
+                tables=tables,
+                confidence=confidence,
+                output_directory=output_dir,
+                generated_files=generated_files
             )
             
-            # Guardar resultados
-            logger.info("Guardando resultados...")
-            main_file, generated_files = self.storage.save(
-                document.name,
-                document.extracted_text,
-                document.tables,
-                pdf_path
-            )
+            logger.info(f"Procesamiento completado: {document.name}")
+            logger.info(f"Archivos generados: {len(generated_files)}")
             
-            logger.info(f"Procesamiento completado. Archivos generados: {len(generated_files)}")
             return document
             
         except Exception as e:
-            logger.error(f"Error procesando documento: {str(e)}")
+            logger.error(f"Error en procesamiento: {str(e)}")
             raise ProcessingError(f"Error procesando {pdf_path}: {str(e)}")

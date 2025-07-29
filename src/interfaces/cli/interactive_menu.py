@@ -158,23 +158,26 @@ class InteractiveMenu:
                 input("Presiona Enter para continuar...")
     
     def process_document(self):
-        """Procesa un documento PDF."""
-        self.clear_screen()
-        self.show_header()
-        
-        # Seleccionar archivo
-        pdf_path = self.select_pdf_file()
-        if not pdf_path:
-            return
-        
-        # Seleccionar motor
-        engine = self.select_engine()
-        
-        print(f"\nProcesando: {pdf_path.name}")
-        print(f"Motor: {engine}")
-        print("-" * 40)
-        
+        """Procesa un documento seleccionado."""
         try:
+            # Seleccionar PDF
+            pdf_files = self.discover_pdfs()
+            if not pdf_files:
+                print("\n No se encontraron archivos PDF en el directorio ./pdfs/")
+                return
+            
+            # Seleccionar archivo
+            pdf_path = self.select_pdf_file()
+            if not pdf_path:
+                return
+            
+            # Seleccionar motor
+            engine = self.select_engine()
+            
+            print(f"\nProcesando: {pdf_path.name}")
+            print(f"Motor: {engine}")
+            print("-" * 40)
+            
             # Actualizar configuración
             self.config.engine_type = engine
             
@@ -187,22 +190,25 @@ class InteractiveMenu:
             # Crear caso de uso
             process_doc = ProcessDocument(ocr, table_extractor, storage)
             
-            # Ejecutar procesamiento
+            # Procesar documento
             document = process_doc.execute(pdf_path)
             
-            print("\nPROCESO COMPLETADO EXITOSAMENTE")
-            print("-" * 30)
-            print(f"Documento: {document.name}")
-            print(f"Texto extraido: {len(document.extracted_text)} caracteres")
-            print(f"Tablas encontradas: {len(document.tables)}")
-            print(f"Resultados guardados en: {self.config.output_dir}")
+            print(f"\n Proceso completado exitosamente!")
+            print(f" Documento: {document.name}")  # Ahora muestra el nombre único
+            print(f" Texto extraído: {len(document.extracted_text)} caracteres")
+            print(f" Tablas encontradas: {len(document.tables)}")
+            print(f" Resultados guardados en: {document.output_directory}")
+            print(f" Archivos generados: {len(document.generated_files)}")
             
-        except DomainError as e:
-            print(f"\nError del dominio: {str(e)}")
+            if document.name != pdf_path.stem:
+                print(f" Nota: Se asignó nombre único '{document.name}' para evitar duplicados")
+            
+            return document
+            
         except Exception as e:
-            print(f"\nError inesperado: {str(e)}")
-        
-        input("\nPresiona Enter para continuar...")
+            logger.error(f"Error inesperado: {str(e)}")
+            print(f"\n Error inesperado: {str(e)}")
+            return None
     
     def configure_system(self):
         """Configura el sistema."""
