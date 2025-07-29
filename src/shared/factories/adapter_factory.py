@@ -1,14 +1,16 @@
 # shared/factories/adapter_factory.py
 """
-Factory para crear adaptadores basado en configuración.
+Factory para crear adaptadores - SIMPLIFICADO.
 """
 from pathlib import Path
-from typing import Protocol
+import logging
 
 from application.ports import OCRPort, TableExtractorPort, StoragePort
 from config.system_config import SystemConfig
 from shared.constants import ENGINE_TYPE_BASIC, ENGINE_TYPE_OPENCV
-from shared.exceptions import ConfigurationError
+from domain.exceptions import ConfigurationError
+
+logger = logging.getLogger(__name__)
 
 
 class AdapterFactory:
@@ -16,53 +18,31 @@ class AdapterFactory:
     
     @staticmethod
     def create_ocr_adapter(config: SystemConfig) -> OCRPort:
-        """
-        Crea el adaptador OCR apropiado basado en la configuración.
+        """Crea adaptador OCR según configuración."""
+        logger.info(f"Creando adaptador OCR: {config.engine_type}")
         
-        Args:
-            config: Configuración del sistema
-            
-        Returns:
-            OCRPort: Adaptador OCR configurado
-            
-        Raises:
-            ConfigurationError: Si el tipo de motor no es soportado
-        """
-        # Lazy import para evitar dependencias circulares
-        from adapters.ocr_adapters import TesseractAdapter, TesseractOpenCVAdapter
+        from adapters.ocr import TesseractAdapter, TesseractOpenCVAdapter
         
         if config.engine_type == ENGINE_TYPE_BASIC:
             return TesseractAdapter.from_config(config)
         elif config.engine_type == ENGINE_TYPE_OPENCV:
             return TesseractOpenCVAdapter.from_config(config)
         else:
-            raise ConfigurationError(f"Tipo de motor OCR no soportado: {config.engine_type}")
+            raise ConfigurationError(f"Motor OCR no soportado: {config.engine_type}")
     
     @staticmethod
     def create_table_extractor() -> TableExtractorPort:
-        """
-        Crea el extractor de tablas.
+        """Crea extractor de tablas."""
+        logger.info("Creando extractor de tablas")
         
-        Returns:
-            TableExtractorPort: Extractor de tablas configurado
-        """
-        # Lazy import para evitar dependencias circulares
-        from adapters.table_pdfplumber import PdfPlumberAdapter
-        
-        return PdfPlumberAdapter()
+        # Usar siempre el adaptador simple para evitar problemas de dependencias
+        from adapters.table_simple import SimpleTableAdapter
+        return SimpleTableAdapter()
     
     @staticmethod
     def create_storage_adapter(output_dir: Path) -> StoragePort:
-        """
-        Crea el adaptador de almacenamiento.
+        """Crea adaptador de almacenamiento."""
+        logger.info(f"Creando adaptador de almacenamiento: {output_dir}")
         
-        Args:
-            output_dir: Directorio de salida
-            
-        Returns:
-            StoragePort: Adaptador de almacenamiento configurado
-        """
-        # Lazy import para evitar dependencias circulares
-        from adapters.storage_filesystem import FileStorage
-        
+        from adapters.storage import FileStorage
         return FileStorage(output_dir)
