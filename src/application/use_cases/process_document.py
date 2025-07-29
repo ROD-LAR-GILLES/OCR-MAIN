@@ -30,15 +30,6 @@ class ProcessDocument:
     def execute(self, pdf_path: Path) -> Document:
         """
         Ejecuta el procesamiento completo del documento con numeración automática.
-        
-        Args:
-            pdf_path: Ruta al archivo PDF a procesar
-            
-        Returns:
-            Document: Documento procesado con nombre único
-            
-        Raises:
-            ProcessingError: Si hay error en el procesamiento
         """
         try:
             logger.info(f"Iniciando procesamiento de: {pdf_path}")
@@ -54,28 +45,61 @@ class ProcessDocument:
             tables = self.table_extractor.extract_tables(pdf_path)
             
             # 3. Guardar resultados con numeración automática
-            doc_name = pdf_path.stem  # Nombre sin extensión
+            doc_name = pdf_path.stem  
             logger.info(f"Guardando resultados para: {doc_name}")
             
             output_dir, generated_files = self.storage.save(
                 doc_name, extracted_text, tables, pdf_path
             )
             
-            # 4. Crear documento resultado - USAR KEYWORDS PARA CLARIDAD
-            document = Document(
-                name=output_dir.name,
-                path=pdf_path,
-                extracted_text=extracted_text,
-                tables=tables,
-                confidence=confidence,
-                output_directory=output_dir,
-                generated_files=generated_files
-            )
+            # DEBUG: Ver qué campos acepta realmente el modelo Document
+            logger.info(f"DEBUG - Campos del modelo Document: {Document.__dataclass_fields__.keys()}")
+            
+            # 4. Crear documento resultado - DETECTAR MODELO AUTOMÁTICAMENTE
+            try:
+                # Intentar con todos los campos
+                document = Document(
+                    name=output_dir.name,
+                    path=pdf_path,
+                    extracted_text=extracted_text,
+                    tables=tables,
+                    confidence=confidence,
+                    output_directory=output_dir,
+                    generated_files=generated_files
+                )
+                logger.info("SUCCESS: Modelo Document completo usado")
+            except TypeError as e:
+                logger.warning(f"Modelo completo falló: {e}")
+                try:
+                    # Intentar sin path
+                    document = Document(
+                        name=output_dir.name,
+                        extracted_text=extracted_text,
+                        tables=tables,
+                        confidence=confidence,
+                        output_directory=output_dir,
+                        generated_files=generated_files
+                    )
+                    logger.info("SUCCESS: Modelo Document sin 'path' usado")
+                except TypeError as e2:
+                    logger.warning(f"Modelo sin path falló: {e2}")
+                    # Intentar modelo básico
+                    document = Document(
+                        name=output_dir.name,
+                        extracted_text=extracted_text,
+                        tables=tables,
+                        confidence=confidence
+                    )
+                    logger.info("SUCCESS: Modelo Document básico usado")
+                    # Agregar campos manualmente si existen
+                    if hasattr(document, 'output_directory'):
+                        document.output_directory = output_dir
+                    if hasattr(document, 'generated_files'):
+                        document.generated_files = generated_files
             
             processing_time = time.time() - start_time
             logger.info(f"Procesamiento completado en {processing_time:.2f}s")
             logger.info(f"Documento único: {document.name}")
-            logger.info(f"Archivos generados: {len(generated_files)}")
             
             # Mostrar si se usó numeración
             if document.name != doc_name:
