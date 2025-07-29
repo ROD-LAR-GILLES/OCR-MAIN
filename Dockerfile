@@ -1,26 +1,40 @@
 # ──────────────────────────────
-# OCR-CLI   (Python 3.11 slim)
+# OCR-CLI   (Python 3.8 slim)
 # ──────────────────────────────
-FROM python:3.11-slim
+FROM python:3.8-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# libs para Tesseract, pdf2image, pdfplumber y OpenCV
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    tesseract-ocr tesseract-ocr-spa poppler-utils ghostscript gcc \
-    libglib2.0-0 libgl1-mesa-glx libsm6 libxext6 libxrender-dev \
-    libgomp1 libglib2.0-0 libgtk-3-0 libavcodec-dev libavformat-dev \
-    libswscale-dev libv4l-dev libxvidcore-dev libx264-dev \
-    libjpeg-dev libpng-dev libtiff-dev libatlas-base-dev \
-    libfontconfig1-dev libcairo2-dev libgdk-pixbuf2.0-dev \
-    libpango1.0-dev libgtk2.0-dev libgtk-3-dev \
- && rm -rf /var/lib/apt/lists/*
+    tesseract-ocr \
+    tesseract-ocr-spa \
+    poppler-utils \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
+# Crear directorio de trabajo
 WORKDIR /app
-ENV PYTHONPATH=/app/src
+
+# Copiar archivos del proyecto
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copiar código fuente
+COPY src/ ./src/
 
-CMD ["python", "src/interfaces/cli/main.py"]
+# Crear directorios necesarios
+RUN mkdir -p resultado temp pdfs
+
+# Usuario no root para seguridad
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
+# Configurar PYTHONPATH
+ENV PYTHONPATH=/app/src
+
+# Comando por defecto - menú interactivo
+CMD ["python", "-m", "interfaces.cli.interactive_menu"]
