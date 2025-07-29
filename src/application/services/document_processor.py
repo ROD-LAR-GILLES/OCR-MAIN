@@ -55,15 +55,15 @@ class DocumentProcessor:
                 doc_name, text, tables, pdf_path
             )
             
-            # Crear documento - SIN KEYWORDS, ARGUMENTOS CORRECTOS
+            # Crear documento - USAR KEYWORDS PARA CLARIDAD
             document = Document(
-                output_dir.name,      # name: str
-                pdf_path,             # path: Path
-                text,                 # extracted_text: str
-                tables,              # tables: List[Dict[str, Any]]
-                confidence,          # confidence: float
-                output_dir,          # output_directory: Optional[Path]
-                generated_files      # generated_files: Optional[List[Path]]
+                name=output_dir.name,
+                path=pdf_path,
+                extracted_text=text,
+                tables=tables,
+                confidence=confidence,
+                output_directory=output_dir,
+                generated_files=generated_files
             )
             
             logger.info(f"Documento procesado exitosamente: {document.name}")

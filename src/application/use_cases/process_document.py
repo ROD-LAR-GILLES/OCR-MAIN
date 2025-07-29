@@ -30,15 +30,6 @@ class ProcessDocument:
     def execute(self, pdf_path: Path) -> Document:
         """
         Ejecuta el procesamiento completo del documento con numeración automática.
-        
-        Args:
-            pdf_path: Ruta al archivo PDF a procesar
-            
-        Returns:
-            Document: Documento procesado con nombre único
-            
-        Raises:
-            ProcessingError: Si hay error en el procesamiento
         """
         try:
             logger.info(f"Iniciando procesamiento de: {pdf_path}")
@@ -54,28 +45,27 @@ class ProcessDocument:
             tables = self.table_extractor.extract_tables(pdf_path)
             
             # 3. Guardar resultados con numeración automática
-            doc_name = pdf_path.stem  # Nombre sin extensión
+            doc_name = pdf_path.stem  
             logger.info(f"Guardando resultados para: {doc_name}")
             
             output_dir, generated_files = self.storage.save(
                 doc_name, extracted_text, tables, pdf_path
             )
             
-            # 4. Crear documento resultado - SIN KEYWORDS
+            # 4. Crear documento - USAR KEYWORDS PARA EVITAR ERRORES
             document = Document(
-                output_dir.name,      # name: str
-                pdf_path,             # path: Path
-                extracted_text,       # extracted_text: str
-                tables,              # tables: List[Dict[str, Any]]
-                confidence,          # confidence: float
-                output_dir,          # output_directory: Optional[Path]
-                generated_files      # generated_files: Optional[List[Path]]
+                name=output_dir.name,
+                path=pdf_path,
+                extracted_text=extracted_text,
+                tables=tables,
+                confidence=confidence,
+                output_directory=output_dir,
+                generated_files=generated_files
             )
             
             processing_time = time.time() - start_time
             logger.info(f"Procesamiento completado en {processing_time:.2f}s")
             logger.info(f"Documento único: {document.name}")
-            logger.info(f"Archivos generados: {len(generated_files)}")
             
             # Mostrar si se usó numeración
             if document.name != doc_name:
