@@ -1,5 +1,5 @@
 """
-Controladores de aplicación para OCR-CLI.
+Controladores de aplicación.
 """
 
 import time
@@ -10,9 +10,9 @@ import logging
 from application.ports import OCRPort, TableExtractorPort, StoragePort
 from application.use_cases import ProcessDocument
 from config.system_config import SystemConfig
-from shared.exceptions import DocumentNotFoundError, ProcessingError, ConfigurationError
-from shared.constants import ENGINE_TYPE_BASIC, ENGINE_TYPE_OPENCV
-from shared.factories import AdapterFactory
+from domain.exceptions import DocumentNotFoundError, ProcessingError, ConfigurationError
+from domain.constants import ENGINE_TYPE_BASIC, ENGINE_TYPE_OPENCV
+from infrastructure.factories import AdapterFactory
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,7 @@ class DocumentController:
             ocr_adapter = AdapterFactory.create_ocr_adapter(ocr_config)
             table_adapter = AdapterFactory.create_table_extractor()
             storage_adapter = AdapterFactory.create_storage_adapter(self.output_dir)
+
             
             # Crear caso de uso
             processor = ProcessDocument(
