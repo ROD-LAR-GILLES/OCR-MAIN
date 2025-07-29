@@ -1,3 +1,0 @@
-"""
-Utilidades para OCR-CLI.
-"""
