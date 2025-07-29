@@ -29,15 +29,6 @@ class DocumentProcessor:
     def process(self, pdf_path: Path) -> Document:
         """
         Procesa un documento PDF completo.
-        
-        Args:
-            pdf_path: Ruta al archivo PDF
-            
-        Returns:
-            Document: Documento procesado
-            
-        Raises:
-            ProcessingError: Si hay error en el procesamiento
         """
         try:
             logger.info(f"Iniciando procesamiento de documento: {pdf_path}")
@@ -55,16 +46,18 @@ class DocumentProcessor:
                 doc_name, text, tables, pdf_path
             )
             
-            # Crear documento - USAR KEYWORDS PARA CLARIDAD
+            # Crear documento usando el modelo CORRECTO
             document = Document(
-                name=output_dir.name,
-                path=pdf_path,
+                name=output_dir.name,           # Nombre único
+                source_path=str(pdf_path),      # ← 'source_path', NO 'path'
                 extracted_text=text,
-                tables=tables,
-                confidence=confidence,
-                output_directory=output_dir,
-                generated_files=generated_files
+                tables=tables or []
             )
+            
+            # Agregar campos adicionales
+            document.confidence = confidence
+            document.output_directory = output_dir
+            document.generated_files = generated_files
             
             logger.info(f"Documento procesado exitosamente: {document.name}")
             return document

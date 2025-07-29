@@ -30,6 +30,15 @@ class ProcessDocument:
     def execute(self, pdf_path: Path) -> Document:
         """
         Ejecuta el procesamiento completo del documento con numeración automática.
+        
+        Args:
+            pdf_path: Ruta al archivo PDF a procesar
+            
+        Returns:
+            Document: Documento procesado con nombre único
+            
+        Raises:
+            ProcessingError: Si hay error en el procesamiento
         """
         try:
             logger.info(f"Iniciando procesamiento de: {pdf_path}")
@@ -52,58 +61,29 @@ class ProcessDocument:
                 doc_name, extracted_text, tables, pdf_path
             )
             
-            # DEBUG: Ver qué campos acepta realmente el modelo Document
-            logger.info(f"DEBUG - Campos del modelo Document: {Document.__dataclass_fields__.keys()}")
+            # 4. Crear documento usando el modelo CORRECTO
+            document = Document(
+                name=output_dir.name,           # Nombre único generado
+                source_path=str(pdf_path),      # ← 'source_path', NO 'path'
+                extracted_text=extracted_text,
+                tables=tables or []             # Asegurar que sea lista
+            )
             
-            # 4. Crear documento resultado - DETECTAR MODELO AUTOMÁTICAMENTE
-            try:
-                # Intentar con todos los campos
-                document = Document(
-                    name=output_dir.name,
-                    path=pdf_path,
-                    extracted_text=extracted_text,
-                    tables=tables,
-                    confidence=confidence,
-                    output_directory=output_dir,
-                    generated_files=generated_files
-                )
-                logger.info("SUCCESS: Modelo Document completo usado")
-            except TypeError as e:
-                logger.warning(f"Modelo completo falló: {e}")
-                try:
-                    # Intentar sin path
-                    document = Document(
-                        name=output_dir.name,
-                        extracted_text=extracted_text,
-                        tables=tables,
-                        confidence=confidence,
-                        output_directory=output_dir,
-                        generated_files=generated_files
-                    )
-                    logger.info("SUCCESS: Modelo Document sin 'path' usado")
-                except TypeError as e2:
-                    logger.warning(f"Modelo sin path falló: {e2}")
-                    # Intentar modelo básico
-                    document = Document(
-                        name=output_dir.name,
-                        extracted_text=extracted_text,
-                        tables=tables,
-                        confidence=confidence
-                    )
-                    logger.info("SUCCESS: Modelo Document básico usado")
-                    # Agregar campos manualmente si existen
-                    if hasattr(document, 'output_directory'):
-                        document.output_directory = output_dir
-                    if hasattr(document, 'generated_files'):
-                        document.generated_files = generated_files
+            # Agregar campos adicionales como atributos dinámicos
+            document.confidence = confidence
+            document.output_directory = output_dir
+            document.generated_files = generated_files
+            document.processing_time = time.time() - start_time
             
             processing_time = time.time() - start_time
             logger.info(f"Procesamiento completado en {processing_time:.2f}s")
             logger.info(f"Documento único: {document.name}")
+            logger.info(f"Confianza: {confidence:.1f}%")
+            logger.info(f"Archivos generados: {len(generated_files)}")
             
             # Mostrar si se usó numeración
             if document.name != doc_name:
-                logger.info(f"NUMERACION APLICADA: '{doc_name}' → '{document.name}'")
+                logger.info(f" NUMERACION APLICADA: '{doc_name}' → '{document.name}'")
             
             return document
             
